@@ -1,0 +1,84 @@
+<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>অ্যাডমিন – ফটোগ্রাফি সাইট</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e0f;--c1:#17171a;--c2:#1f1f23;--ln:#2b2b30;--tx:#f5efe6;--mut:#a39e96;--ac:#e8723a;--ok:#4ade80;--red:#ff7a7a}
+*{box-sizing:border-box;margin:0}body{background:var(--bg);color:var(--tx);font-family:'Hind Siliguri',system-ui,sans-serif;max-width:720px;margin:auto;padding:14px 14px 90px}
+h1{font-size:21px}h2{font-size:17px;margin:16px 0 8px}.k{color:var(--mut);font-size:14px}
+input,select,textarea{width:100%;background:var(--c1);border:1px solid var(--ln);border-radius:12px;padding:11px 12px;color:var(--tx);font:inherit;margin:4px 0 8px;outline:none}input:focus,textarea:focus,select:focus{border-color:var(--ac)}textarea{min-height:80px}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:42px;padding:0 16px;border-radius:12px;font:inherit;font-weight:700;border:0;cursor:pointer;background:var(--ac);color:#fff;font-size:15px}.btn.g{background:var(--c2);color:var(--tx);border:1px solid var(--ln)}.btn.r{background:rgba(255,122,122,.14);color:var(--red);border:1px solid rgba(255,122,122,.35)}.btn.s{height:34px;font-size:13px;padding:0 12px}
+.card{background:var(--c1);border:1px solid var(--ln);border-radius:14px;padding:12px;margin-bottom:10px}.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.row>.btn{flex:none}
+.tabs{display:flex;gap:6px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5;overflow:auto}.tabs button{flex:1;white-space:nowrap;border:1px solid var(--ln);background:var(--c1);color:var(--mut);border-radius:99px;padding:9px 14px;font:inherit;cursor:pointer}.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.th{position:relative}.th img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}.th .x{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(14,14,15,.96);border-top:1px solid var(--ln);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center;z-index:9}.bar .btn{flex:1;max-width:340px}
+.pv{width:90px;height:90px;border-radius:12px;object-fit:cover;background:var(--c2)}.note{background:rgba(232,114,58,.1);border:1px solid rgba(232,114,58,.35);border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
+#toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#000;border:1px solid var(--ln);padding:9px 16px;border-radius:12px;display:none;z-index:20}
+.lg{max-width:380px;margin:40px auto}.ok{color:var(--ok)}#st{position:fixed;top:8px;right:10px;font-size:13px;color:var(--mut);z-index:30;background:rgba(14,14,15,.9);padding:3px 10px;border-radius:99px}
+.ct{display:flex;justify-content:space-between;align-items:center}</style></head><body><div id="st"></div><div id="root"></div><div id="toast"></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,query,where,getDocs}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const SITE="jahed",DEF={"settings": {"name": "Jahedography", "tag": "Explore · Capture · Share", "title": "আপনার সেরা মুহূর্ত, আমার ক্যামেরায়", "text": "বিয়ে, পোর্ট্রেট, ইভেন্ট ও প্রোডাক্ট ফটোগ্রাফি। প্রতিটি মুহূর্ত যত্ন করে ক্যামেরাবন্দি করি।", "about": "আমি জাহেদ হাসান মান্না, বরিশাল থেকে ফটোগ্রাফির কাজ করি। গল্প বলে এমন ছবি তোলাই আমার কাজ। আপনার বিশেষ দিনটিকে স্মরণীয় করে রাখতে আমি সঙ্গে আছি।", "whatsapp": "8801616317011", "fb": "", "insta": "", "youtube": "", "address": "বরিশাল", "email": "", "logo": "", "hero": ""}, "cats": [{"id": "c1", "name": "বিয়ে"}, {"id": "c2", "name": "পোর্ট্রেট"}, {"id": "c3", "name": "ইভেন্ট"}, {"id": "c4", "name": "প্রোডাক্ট"}], "packages": [{"id": "k1", "name": "বেসিক", "price": 3000, "badge": "", "items": ["২ ঘণ্টার শুট", "২০টি এডিট করা ছবি", "অনলাইন গ্যালারি"]}, {"id": "k2", "name": "স্ট্যান্ডার্ড", "price": 7000, "badge": "জনপ্রিয়", "items": ["৫ ঘণ্টার শুট", "৫০টি এডিট করা ছবি", "সব ছবির সফট কপি", "অনলাইন গ্যালারি"]}, {"id": "k3", "name": "প্রিমিয়াম", "price": 15000, "badge": "", "items": ["পুরো দিনের কাভারেজ", "১০০টি এডিট করা ছবি", "ভিডিও হাইলাইট", "অ্যালবাম ডিজাইন"]}]};
+const app=initializeApp({apiKey:"AIzaSyD1uWle_USBMBO_rJuT64TMCmmzyO1rdH8",authDomain:"techcraft-gigs.firebaseapp.com",projectId:"techcraft-gigs",storageBucket:"techcraft-gigs.firebasestorage.app",messagingSenderId:"402779044950",appId:"1:402779044950:web:f728c347d9d23d18b48ff7"}),auth=getAuth(app),db=getFirestore(app);
+const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+let toastT;const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2200)};
+let D=null,PH=[],tab='pho',saveT,lastCat='',me=null;
+function shrink(file,max,q){return new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const r=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*r);c.height=Math.round(im.height*r);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>no();im.src=u})}
+const stat=t=>{$('#st').textContent=t};
+const save=()=>{stat('সেভ হচ্ছে…');clearTimeout(saveT);saveT=setTimeout(async()=>{try{await setDoc(doc(db,'pg_site',SITE),{owner:me.uid,settings:D.settings,cats:D.cats,packages:D.packages,ts:Date.now()});stat('✓ সেভ হয়েছে, সাইটে লাইভ')}catch(e){stat('⚠ সেভ হয়নি, ইন্টারনেট দেখুন');console.error(e)}},700)};
+const TABS=[['gen','সাধারণ'],['cat','ক্যাটাগরি'],['pho','ছবি'],['pk','প্যাকেজ']];
+function draw(){
+ if(!D)return;
+ $('#tb').innerHTML=TABS.map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?'on':''}">${t[1]}</button>`).join('');
+ document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw()});
+ ({gen,cat,pho,pk}[tab])()}
+const F=(k,l,ph)=>`<label class="k">${l}</label><input data-f="${k}" value="${esc(D.settings[k])}" placeholder="${ph||''}">`;
+function gen(){const s=D.settings;
+ $('#app').innerHTML=`<div class="card">${F('name','নাম (ব্র্যান্ড)')}${F('tag','ছোট লাইন (যেমন: Explore · Capture · Share)')}${F('title','বড় শিরোনাম')}<label class="k">ছোট বর্ণনা</label><textarea data-f="text">${esc(s.text)}</textarea><label class="k">পরিচিতি (আমার সম্পর্কে)</label><textarea data-f="about" style="min-height:120px">${esc(s.about)}</textarea></div>
+ <div class="card">${F('whatsapp','WhatsApp নম্বর (৮৮০১… সহ)','8801XXXXXXXXX')}${F('address','এলাকা')}${F('fb','ফেসবুক পেজের লিংক','https://')}${F('insta','ইনস্টাগ্রাম লিংক','https://')}${F('youtube','ইউটিউব লিংক','https://')}</div>
+ <div class="card"><b>লোগো</b><div class="row" style="margin-top:8px">${s.logo?`<img class="pv" src="${esc(s.logo)}">`:'<div class="pv"></div>'}<input type="file" id="lg" accept="image/*"></div>${s.logo?'<button class="btn r s" id="lgx" style="margin-top:6px">লোগো মুছুন</button>':''}
+ <b style="display:block;margin-top:14px">প্রথম পাতার বড় ছবি (ঐচ্ছিক)</b><div class="row" style="margin-top:8px">${s.hero?`<img class="pv" src="${esc(s.hero)}">`:'<div class="pv"></div>'}<input type="file" id="hr" accept="image/*"></div>${s.hero?'<button class="btn r s" id="hrx" style="margin-top:6px">ছবি মুছুন</button>':''}</div>`;
+ document.querySelectorAll('[data-f]').forEach(i=>i.oninput=()=>{D.settings[i.dataset.f]=i.value;save()});
+ $('#lg').onchange=async e=>{const f=e.target.files[0];if(f){D.settings.logo=await shrink(f,300,.85);save();draw()}};$('#hr').onchange=async e=>{const f=e.target.files[0];if(f){D.settings.hero=await shrink(f,1400,.7);save();draw()}};
+ const a=$('#lgx');if(a)a.onclick=()=>{D.settings.logo='';save();draw()};const b=$('#hrx');if(b)b.onclick=()=>{D.settings.hero='';save();draw()}}
+function cat(){
+ $('#app').innerHTML=`<p class="k">ছবির বিভাগ, যেমন: বিয়ে, পোর্ট্রেট।</p>${D.cats.map(c=>`<div class="card row"><input data-n="${c.id}" value="${esc(c.name)}" style="margin:0"><button class="btn r s" data-d="${c.id}">মুছুন</button></div>`).join('')}<div class="row"><input id="nc" placeholder="নতুন ক্যাটাগরির নাম"><button class="btn" id="ac">যোগ</button></div>`;
+ document.querySelectorAll('[data-n]').forEach(i=>i.oninput=()=>{D.cats.find(c=>c.id===i.dataset.n).name=i.value;save()});
+ document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const id=b.dataset.d;if(PH.some(p=>p.cat===id)){toast('এই ক্যাটাগরিতে ছবি আছে, আগে ছবি সরান');return}D.cats=D.cats.filter(c=>c.id!==id);save();draw()});
+ $('#ac').onclick=()=>{const v=$('#nc').value.trim();if(!v)return;D.cats.push({id:uid(),name:v});save();draw()}}
+function pho(){
+ if(!D.cats.length){$('#app').innerHTML='<div class="note">আগে "ক্যাটাগরি" থেকে একটা ক্যাটাগরি যোগ করুন।</div>';return}
+ $('#app').innerHTML=`<div class="card"><b>নতুন ছবি যোগ (আপলোড করলেই সাইটে লাইভ)</b><select id="pc">${D.cats.map(c=>`<option value="${c.id}" ${c.id===lastCat?'selected':''}>${esc(c.name)}</option>`).join('')}</select><input type="file" id="pf" accept="image/*" multiple><div class="k" id="ps">একসাথে অনেক ছবি বেছে নেওয়া যায়। এখন ছবি: ${PH.length}টি</div></div><div class="note">সবচেয়ে ভালো ৬০টির মধ্যে রাখা, তাহলে সাইট দ্রুত খুলবে।</div>
+ <div class="grid">${[...PH].sort((a,b)=>(b.date||0)-(a.date||0)).map(p=>`<div class="card th"><img src="${esc(p.th)}"><button class="x" data-x="${p.id}">✕</button><select data-c="${p.id}">${D.cats.map(c=>`<option value="${c.id}" ${p.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><label class="k"><input type="checkbox" data-h="${p.id}" ${p.hidden?'checked':''} style="width:auto;margin:0 6px 0 0">লুকিয়ে রাখুন</label></div>`).join('')}</div>`;
+ $('#pf').onchange=async e=>{const fs=[...e.target.files];lastCat=$('#pc').value;let n=0,bad=0;$('#pf').disabled=true;
+  for(const f of fs){$('#ps').textContent='আপলোড হচ্ছে… '+(++n)+'/'+fs.length+' (অপেক্ষা করুন)';
+   try{const id=uid(),th=await shrink(f,600,.72);let q=.8,full=await shrink(f,1600,q);while(full.length>850000&&q>.4){q-=.1;full=await shrink(f,1600,q)}
+    await setDoc(doc(db,'pg_full',id),{site:SITE,img:full});const rec={site:SITE,cat:lastCat,title:'',hidden:false,date:Date.now()+n,th};await setDoc(doc(db,'pg_img',id),rec);PH.push({id,...rec})}catch(x){bad++;console.error(x)}}
+  draw();toast(bad?((fs.length-bad)+'টি যোগ হয়েছে, '+bad+'টি হয়নি'):fs.length+'টি ছবি লাইভ হয়েছে ✓')};
+ document.querySelectorAll('[data-x]').forEach(b=>b.onclick=async()=>{if(confirm('ছবিটি মুছবেন?')){try{await deleteDoc(doc(db,'pg_img',b.dataset.x));await deleteDoc(doc(db,'pg_full',b.dataset.x));PH=PH.filter(p=>p.id!==b.dataset.x);draw();toast('মুছে গেছে')}catch(e){toast('মোছা যায়নি')}}});
+ document.querySelectorAll('[data-c]').forEach(s=>s.onchange=async()=>{const p=PH.find(p=>p.id===s.dataset.c);p.cat=s.value;await updateDoc(doc(db,'pg_img',p.id),{cat:p.cat});toast('সেভ ✓')});
+ document.querySelectorAll('[data-h]').forEach(s=>s.onchange=async()=>{const p=PH.find(p=>p.id===s.dataset.h);p.hidden=s.checked;await updateDoc(doc(db,'pg_img',p.id),{hidden:p.hidden});toast('সেভ ✓')})}
+function pk(){
+ $('#app').innerHTML=`${D.packages.map(k=>`<div class="card"><label class="k">প্যাকেজের নাম</label><input data-k="name" data-i="${k.id}" value="${esc(k.name)}"><div class="row"><div><label class="k">দাম (৳)</label><input data-k="price" data-i="${k.id}" inputmode="numeric" value="${k.price}"></div><div><label class="k">ব্যাজ (যেমন: জনপ্রিয়)</label><input data-k="badge" data-i="${k.id}" value="${esc(k.badge)}"></div></div><label class="k">কী কী পাবেন (প্রতি লাইনে একটা)</label><textarea data-k="items" data-i="${k.id}" style="min-height:110px">${esc((k.items||[]).join('\n'))}</textarea><button class="btn r s" data-d="${k.id}">এই প্যাকেজ মুছুন</button></div>`).join('')}<button class="btn" id="ak">＋ নতুন প্যাকেজ</button>`;
+ document.querySelectorAll('[data-k]').forEach(i=>i.oninput=()=>{const k=D.packages.find(x=>x.id===i.dataset.i),f=i.dataset.k;k[f]=f==='price'?(parseInt(i.value.replace(/\D/g,''))||0):f==='items'?i.value.split('\n').map(s=>s.trim()).filter(Boolean):i.value;save()});
+ document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{if(confirm('মুছবেন?')){D.packages=D.packages.filter(x=>x.id!==b.dataset.d);save();draw()}});
+ $('#ak').onclick=()=>{D.packages.push({id:uid(),name:'নতুন প্যাকেজ',price:0,badge:'',items:[]});save();draw()}}
+
+function login(msg){
+ $('#root').innerHTML=`<div class="lg"><h1>🛠️ সাইট অ্যাডমিন</h1><p class="k">সাইটের মালিকের লগইন। প্রথমবার হলে "নতুন অ্যাকাউন্ট" চাপুন (যিনি প্রথমে খুলবেন তিনিই মালিক)।</p><div class="card" style="margin-top:14px"><label class="k">ইমেইল</label><input id="le" type="email" autocomplete="email"><label class="k">পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input id="lp" type="password" autocomplete="current-password"><div style="color:var(--red);min-height:22px" id="lm">${esc(msg||'')}</div><div class="row"><button class="btn" id="li">লগইন</button><button class="btn g" id="lu">নতুন অ্যাকাউন্ট</button></div></div></div>`;
+ const go=async up=>{const e=$('#le').value.trim(),p=$('#lp').value;if(!e||p.length<6)return $('#lm').textContent='ইমেইল আর ৬+ অক্ষরের পাসওয়ার্ড দিন';$('#lm').textContent='অপেক্ষা করুন…';
+  try{up?await createUserWithEmailAndPassword(auth,e,p):await signInWithEmailAndPassword(auth,e,p)}catch(x){$('#lm').textContent=({'auth/email-already-in-use':'এই ইমেইলে অ্যাকাউন্ট আছে, লগইন চাপুন','auth/invalid-credential':'ইমেইল বা পাসওয়ার্ড ভুল','auth/weak-password':'পাসওয়ার্ড আরও বড় দিন','auth/invalid-email':'ইমেইল ঠিক নয়'})[x.code]||'সমস্যা হয়েছে, আবার চেষ্টা করুন'}};
+ $('#li').onclick=()=>go(false);$('#lu').onclick=()=>go(true)}
+async function start(u){
+ me=u;$('#root').innerHTML='<p class="k" style="padding:40px 0;text-align:center">লোড হচ্ছে…</p>';
+ try{let sd=await getDoc(doc(db,'pg_site',SITE));
+  if(!sd.exists()){const o={owner:u.uid,settings:DEF.settings,cats:DEF.cats,packages:DEF.packages,ts:Date.now()};await setDoc(doc(db,'pg_site',SITE),o);sd=await getDoc(doc(db,'pg_site',SITE))}
+  const s=sd.data();if(s.owner!==u.uid){await signOut(auth);return login('এই সাইটের মালিক অন্য অ্যাকাউন্ট। মালিকের ইমেইল দিয়ে ঢুকুন।')}
+  D={settings:s.settings||{},cats:s.cats||[],packages:s.packages||[]};
+  const ps=await getDocs(query(collection(db,'pg_img'),where('site','==',SITE)));PH=ps.docs.map(x=>({id:x.id,...x.data()}));lastCat=(D.cats[0]||{}).id||'';
+  $('#root').innerHTML=`<h1>🛠️ সাইট অ্যাডমিন</h1><p class="k">এখানে যা বদলাবেন সাথে সাথে সাইটে লাইভ হবে।</p><div class="tabs" id="tb"></div><div id="app"></div><div class="bar"><a class="btn" href="index.html" target="_blank">🌐 সাইট দেখুন</a><button class="btn g" id="lo" style="flex:none">বের হন</button></div>`;
+  $('#lo').onclick=()=>signOut(auth);stat('✓ লাইভ');draw()}
+ catch(e){console.error(e);$('#root').innerHTML='<div class="note">লোড করা যায়নি। ইন্টারনেট দেখে পেজ রিফ্রেশ করুন।</div>'}}
+onAuthStateChanged(auth,u=>{if(u)start(u);else{D=null;stat('');login()}});
+</script></body></html>
